@@ -7,18 +7,9 @@ import { Elysia } from "elysia";
 import { createContext } from "./lib/context";
 import { appRouter } from "./routers";
 import { CORSPlugin } from "@orpc/server/plugins";
-import type { Context } from "elysia";
-
-export type Env = {
-  DATABASE_URL: string;
-  DATABASE_AUTH_TOKEN: string;
-  CORS_ORIGIN: string;
-  BETTER_AUTH_SECRET: string;
-  BETTER_AUTH_URL: string;
-};
 
 export default {
-  async fetch(request: Request, env: Env, ctx: Context): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const handler = new RPCHandler(appRouter, {
       plugins: [
         new CORSPlugin({
@@ -33,19 +24,10 @@ export default {
     const app = new Elysia({ aot: false, strictPath: false })
       .use(
         cors({
-          origin: (request) => {
-            const allowedOrigins = [
-              "http://localhost:3000",
-              "http://localhost:3001",
-              env.CORS_ORIGIN,
-            ];
-            const origin = request.headers.get("Origin") || "";
-            return allowedOrigins.includes(origin);
-          },
+          origin: true,
           methods: ["GET", "HEAD", "PUT", "POST", "DELETE", "PATCH"],
           allowedHeaders: ["Content-Type", "Authorization"],
           credentials: true,
-          preflight: true,
         })
       )
       .derive(() => {
